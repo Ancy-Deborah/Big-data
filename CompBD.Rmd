@@ -1,0 +1,126 @@
+---
+title: "Logistic Regression"
+author: "18PCSA102"
+date: "2/25/2020"
+output: word_document
+---
+
+##TEST OF INDEPENDENCE
+```{r}
+library(vcd)
+library(ROCR)
+library(caTools)
+library(e1071)
+options(warn=-1)
+#install.packages("ROCR")
+
+#IMPORT DATASET
+dataset<-read.csv(file.choose(),header=TRUE)
+str(dataset)
+dataset<-na.omit(dataset)
+attach(dataset)
+
+#TEST OF INDEPENDENCE
+mytable<-xtabs(~employed_last_year+literacy,data=dataset)
+chisq.test(mytable)
+fisher.test(mytable)
+
+#HAS_INSURANCE VS LITERACY
+mytab<-xtabs(~has_insurance+literacy,dataset)
+chisq.test(mytab)
+fisher.test(mytab)
+
+#URBAN VS LITERACY
+my<-xtabs(~is_urban+literacy)
+chisq.test(my)
+fisher.test(my)
+
+#FORMAL SAVING VS EMPLOYMENT CATEGORY
+tab<-xtabs(~formal_savings+employment_category_last_year,dataset)
+chisq.test(tab)
+
+#HAS INVESTMENT VS EMPLOYMENT
+tabl<-xtabs(~has_investment+employment_category_last_year,dataset)
+chisq.test(tabl)
+assocstats(tabl)
+
+#HAS INSURANCE VS LITERACY
+t<-xtabs(~has_insurance+literacy,dataset)
+chisq.test(t)
+assocstats(t)
+fisher.test(t)
+
+#HAS INSURANCE VS HAS INVESTMENT
+ta<-xtabs(~has_insurance+has_investment,dataset)
+chisq.test(ta)
+assocstats(ta)
+
+#BORROWED FOR DAILY VS EMERGENCY
+a<-xtabs(~borrowed_for_daily_expenses_last_year+borrowed_for_emergency_last_year,dataset)
+chisq.test(a)
+
+#INCOME VS BORROWING RECENCY
+b<-xtabs(~share_hh_income_provided+borrowing_recency,dataset)
+chisq.test(b)
+
+#EMP TYPE VS EMP CATEGORY
+c<-xtabs(~employment_type_last_year+employment_category_last_year,dataset)
+chisq.test(c)
+assocstats(c)
+
+#NUM FINANCIAL ACT VS NUM FORMAL INSTITUTION
+d<-xtabs(~num_financial_activities_last_year+num_formal_institutions_last_year,dataset)
+chisq.test(d)
+assocstats(d)
+
+#ACTIVE BANK USER VS LITERACY
+e<-xtabs(~active_bank_user+literacy,dataset)
+chisq.test(e)
+assocstats(e)
+fisher.test(e)
+
+#REG BANK VS LITERACY
+f<-xtabs(~reg_bank_acct+literacy,dataset)
+chisq.test(f)
+assocstats(f)
+fisher.test(f)
+
+dataset$Poverty<-as.factor(dataset$Poverty)
+
+
+```
+
+
+##IMPLEMENTATION
+
+```{r}
+
+#creating training and testing data
+set.seed(300)
+split<-sample.split(dataset,SplitRatio = 0.80)
+split
+train<-subset(dataset,split=="TRUE")
+test<-subset(dataset,split=="FALSE")
+table(train$Poverty)
+table(test$Poverty)
+
+
+#BUILT THE LOGISTIC MODEL
+mymodel<-glm(Poverty~employed_last_year+education_level+informal_savings+has_investment+phone_technology+reg_bank_acct+num_financial_activities_last_year+is_urban, family='binomial', data=train,maxit=100)
+
+mymodel
+summary(mymodel)
+
+#PREDICTION
+restest<-predict(mymodel,test,type="response")
+
+
+confmatrix<-table(Actual_Value=test$Poverty,Predicted_Value=restest>=0.5)
+confmatrix
+
+#ACCURACY OF THE MODEL
+accuracy<-sum(diag(confmatrix))/sum(confmatrix)
+print(paste("Accuracy of the test",accuracy))
+
+```
+
