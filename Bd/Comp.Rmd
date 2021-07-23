@@ -1,0 +1,400 @@
+---
+title: "Data preprocessing and Visualisaton for Poverty Dataset"
+author: "18PCSA102"
+date: "2/2/2020"
+output: html_document
+---
+<h3 style="color:Blue;>INTRODUCTION</h3>
+<p>The dataset is about predicting the poverty rate using different types of attribute value.The dataset has been applied different types of basic functions,test of independance and statistical functions. The graphical representation of the data is also done using the graphical functions like barplot,plot,boxplot and so.</p>
+<br>
+<h3 style="color:Blue;">RECODING AND EXCLUDING VALUES</h3>
+
+
+```{r}
+library(Hmisc)
+library(vioplot)
+library(vcd)
+library(sqldf)
+library(reshape)
+library(plotrix)
+
+#Attaching dataset
+dataset<-read.csv(file.choose(),header=TRUE)
+attach(dataset)
+dataset<-na.omit(dataset)
+
+#Basic functions
+names(dataset)
+head(dataset)
+tail(dataset)
+dim(dataset)
+class(dataset)
+mode(dataset)
+length(dataset)
+str(dataset)
+mean(poverty_probability)
+median(poverty_probability)
+var(poverty_probability)
+sd(poverty_probability)
+quantile(poverty_probability)
+range(poverty_probability)
+summary(dataset)
+
+#RENAME THE COLOMN NAMES
+dataset<-rename(dataset,c(borrowed_for_emergency_last_year="borrowed_for_emergency",borrowed_for_daily_expenses_last_year="bor_daily_lastyr"))
+
+
+#INVERSTMENT vs INSURANCE
+table(has_insurance,has_investment)
+
+#NUMBER OF PEOPLE WHO HAVE BANK ACCOUNT AND NOT
+table(reg_bank_acct)
+
+#NO. OF PEOPLE WHO HAVE INSURANCE AND INVESTMENT
+table(has_insurance,has_investment)
+
+#NO. OF  FEMALE WHO HAVE BANK ACCOUNT AND NOT
+table(sqldf("select Gender,reg_bank_acct from dataset where Gender='female'"))
+
+```
+<h3 style="color:Blue;">Descriptive statistics</h3>
+
+```{r}
+
+vars <- c("num_financial_activities_last_year",
+"num_formal_institutions_last_year","num_informal_institutions_last_year")
+head(dataset[vars])
+summary(dataset[vars])
+
+#SAPPLY
+mystats <- function(x, na.omit=FALSE){
+if (na.omit)
+x <- x[!is.na(x)]
+m <- mean(x)
+n <- length(x)
+s <- sd(x)
+skew <- sum((x-m)^3/s^3)/n
+kurt <- sum((x-m)^4/s^4)/n - 3
+return(c(n=n, mean=m, stdev=s, skew=skew, kurtosis=kurt))
+}
+
+sapply(dataset[vars], mystats)
+
+#Descriptive statistics via describe()
+describe(dataset[vars])
+
+#Descriptive statistics via stat.desc()
+library(pastecs)
+stat.desc(dataset[vars])
+
+
+```
+
+<h3 style="color:blue">TEST OF INDEPENDENCE</h3>
+<p>Employement and literacy variables are not dependant on each other. Insurance and investment are not dependant variables.Since phi value is not equal to 1 there is no dependence between formal savings and registered bank account.Can use internet and advanced phone usage are not dependant </p>
+
+```{r}
+#CHI-SQUARE
+ch<-xtabs(~employed_last_year+literacy,data=dataset)
+chisq.test(ch)
+
+chh<-xtabs(~has_insurance+has_investment,data=dataset)
+chisq.test(chh)
+
+#ASSOCIATION
+chs<-xtabs(~formal_savings+reg_bank_acct,data=dataset)
+assocstats(chs)
+
+#FISHERS EXACT TEST
+fish<-xtabs(~can_use_internet+advanced_phone_use,data=dataset)
+fisher.test(fish)
+
+
+
+```
+
+
+
+<h3 style="color=blue">DATA VISUALIZATION</h3>
+<ul><li>
+There is a rapid raise in the poverty rate from 0.6 to 1.0,huge number of people are under poverty.
+</li>
+<li>
+The age group from 20-60 is suffering more from poverty compared to age group   from 70-80.</li></ul>
+
+
+
+```{r}
+
+hist(poverty_probability,col = "royalblue")
+plot(poverty_probability,age,col="#bcf500")
+```
+
+<h4>LITERACY AND POVERTY</h4>
+
+<p>The dataset has 3075 number of people has illerate and 5119 number of people   are literate.Peple who are illerate are having high poverty compared to litrate.</p>
+
+```{r}
+table(literacy)
+plot(table(literacy,poverty_probability),col="red")
+```
+
+<h4 style="color:blue">MARRIED vs POVERTY and URBAN vs RURAL</h4>
+<p>People who are married are under high poverty rate compared to unmarried.People living in rural areas face more poverty rate compared to urban areas,the dataset contains 5616 number of rural data and 2784 number of urban data.</p>
+
+```{r}
+plot(table(married,poverty_probability),col="#009999")
+abline(lm(poverty_probability~married),col="#FF0000")
+
+
+#URBAN / RURAL
+table(is_urban)
+plot(table(is_urban,poverty_probability),col="purple")
+
+```
+
+
+<h4 style="color:blue">EDUCATION LEVEL OF FEMALE</h4>
+<p>Female who are illiterate are 1954 in numbers and 2493 are litrate.The number of female's who are employed are 2029 in number and unemployed are 2418 in number. Many female are in educational level 1 followed by educational level 2</p>
+
+
+```{r}
+#LITERACY VS FEMALE
+litrate<-table(sqldf("select Gender,literacy from dataset where Gender='female'"))
+litrate
+barplot(litrate,col="orange")
+
+#EDUCATION LEVEL OF FEMALE
+table(sqldf("select Gender,education_level from dataset where Gender='female'"))
+barplot(table(sqldf("select Gender,education_level from dataset where Gender='female'")),col="violet")
+```
+
+<h4 style="color:blue">EDUCATION LEVEL OF MALE</h4>
+<p>The number of men who are illerate are 1121 and the number of men who are      literate are 2491. Many Male are in educational level 2 followed by educational level 1</p>
+
+```{r}
+#MALE LITRATE
+litrate<-table(sqldf("select Gender,literacy from dataset where Gender='male'"))
+litrate
+barplot(litrate,col="blue")
+
+
+#EDUCATION LEVEL OF MALE
+table(sqldf("select Gender,education_level from dataset where Gender='male'"))
+barplot(table(sqldf("select Gender,education_level from dataset where Gender='male'")),col="brown")
+```
+
+
+<h4 style="color:blue">EMPLOYMENT LEVEL OF MALE & FEMALE</h4>
+<p>The number of male who are employed are 2762 in number and unemployed are 850 in number.Employment rate is more comapared to unemployment.Female who are "Not working" (2192) rate is more compared to self employment(909)</p>
+
+
+```{r}
+#Women Employment 
+employment<-table(sqldf("select Gender,employed_last_year from dataset where Gender='female'"))
+employment
+barplot(employment,col="pink")
+
+#Men Employment 
+employment<-table(sqldf("select Gender,employed_last_year from dataset where Gender='male'"))
+employment
+barplot(employment,col="skyblue")
+
+#Many women are in not working category
+table(sqldf("select employment_type_last_year,Gender from dataset where Gender='male'"))
+```
+
+
+
+<h4 style="color:blue">SAVINGS OF MALE & FEMALE</h4>
+<p>The female having no FORMAL SAVING rate is more compared to female who have FORMAL SAVING.The male having no FORMAL SAVING rate is more compared to male having FORMAL SAVING.The poverty rate is high for people who don't have formal savings and informal savings</p>
+
+```{r}
+#FEMALE FORMAL SAVING 
+fsavings<-table(sqldf("select formal_savings,Gender from dataset where Gender='female'"))
+fsavings
+barplot(fsavings,col="#b4d4be")
+
+#MALE FORMAL SAVINGS
+msavings<-table(sqldf("select formal_savings,Gender from dataset where Gender='male'"))
+msavings
+barplot(msavings,col="#66010e")
+
+#FORMAL SAVING AND POVERTY
+form<-table(poverty_probability,formal_savings)
+barplot(form,col="#7b91db")
+
+#INFORMAL SAVING AND POVERTY
+inform<-table(poverty_probability,informal_savings)
+barplot(inform,col = "purple")
+
+#FORMAL vs INFORMAL
+plot(informal_savings,formal_savings)
+abline(lm(formal_savings~informal_savings))
+```
+
+
+<h4 style="color:blue">ISURANCE,INVESTMENT AND BANK ACCOUNT</h4>
+<p>People who  have insurance are not under poverty and pepole who dont have insurance are under high risk of poverty rate.People who  have investment also face poverty and pepole who  dont have investment are under high risk of poverty rate. People who dont have bank account are having high poverty proabability compared to ones who have bank account</p>
+
+```{r}
+#INSURANCE
+insur<-table(poverty_probability,has_insurance)
+barplot(insur,col = "chocolate")
+
+#INVERSTMENT
+inves<-table(poverty_probability,has_investment)
+barplot(inves,col = "springgreen")
+
+#BANK ACCOUNT
+bacct<-table(poverty_probability,reg_bank_acct)
+barplot(bacct,col = "yellow")
+
+#FEMALE BANK HOLDERS
+fbank<-table(sqldf("select Gender,reg_bank_acct from dataset where Gender='female'"))
+barplot(fbank,col="#dbd67b")
+```
+
+
+<h4 style="color:blue">PHONE AND INTERNET USAGE</h4>
+<p>There is a rapid raise in the phone ownership from age 17 to 33 and from age 33 to 69 the phone ownership rate has been decreased. Male use internet more compared to female. People in urban area have more internet access comapared to urban area. Those who have more number of phone ownership the more the internet usuage</p>
+
+
+```{r}
+#PhoneOwnership and age
+counts<-table(phone_ownership,age)
+
+barplot(counts,main="Age vs Phone",xlab="Age", ylab="Phone frequency",col=c("red", "yellow","green"),legend=rownames(counts))
+
+#Internet vs GENDER
+inter<-table(can_use_internet,Gender)
+inter
+barplot(inter,main="Internet Usage Vs Gender",xlab="Gender", ylab="Internet",col=c("red", "yellow"),legend=rownames(inter), beside=TRUE)
+
+#Internet usuage in URBAN
+urb<-table(can_use_internet,is_urban)
+urb
+barplot(urb,main="Internet Usage Vs Urban/Rural",xlab="Area", ylab="Internet",col=c("red", "yellow"),legend=c("Urban","Rural"), beside=TRUE)
+
+#INTERNET VS PHONE OWNERSHIP
+fin<-table(phone_ownership ,can_use_internet)
+spine(fin, main="Spinogram Example")
+```
+
+<h4 style="color:blue">PIE CHART</h4>
+<p>female records is 55% more compared to male records which is 45%. The countries A,B,D have more records comapred to other country id</p>
+
+
+```{r}
+#PIE CHART FOR GENDER
+gen<-table(Gender)
+slices<-gen[2:3]
+lbls<-c("female","male")
+pct <- round(slices/sum(slices)*100)
+lbls2 <- paste(lbls, " ", pct, "%", sep="")
+pie(slices,labels =lbls2 ,main="gender",col=rainbow(length(lbls2)))
+
+#PIE CHART FOR COUNTRY
+con<-table(country_id)
+slice<-con[2:8]
+lb<-c("A","B","C","D","F","G","I","J")
+pct <- round(slice/sum(slice)*100)
+lb2 <- paste(lb, " ", pct, "%", sep="")
+pie(slice,labels =lb2 ,main="COUNTRY ID",col=rainbow(length(lb2)))
+```
+
+<h4 style="color:blue">FAN PLOT & DENSITY PLOT</h4>
+<p>Employment type has more irregular seasonal and other.There is rapid raise in the  amount of poverty rate from 0.8 to 1.0.</P>
+
+```{r}
+#FAN PLOT
+s<-table(employment_type_last_year)
+lbls <- c("Irregular Seasonal", "Not working", "Other", "Salaried", "Self Employed")
+fan.plot(s, labels = lbls, main="EMPLOYEEMENT TYPE")
+
+#DENSITY PLOT
+d<-density(poverty_probability)
+plot(d,main="Poverty Probability")
+polygon(d, col="brown", border="blue")
+```
+
+
+<h4 style="color:blue">BOX PLOT,DOT PLOT & TWEAKING, MEAN</h4>
+<p>The education level rate is more above 2 level. The median for education level is 1.0 and upper quantile is 2.0.The people who are under unemployement and other have less educational level and people who have employed  and student are having higher education level
+25.The dataset contains huge amount of data of age group from 18-40.Rural data is more compared to urban.</p>
+```{r}
+#BOX PLOT
+boxplot(education_level,main="Education Level", ylab="Education" ,col="maroon")
+
+
+#DOT PLOT
+dotchart(age,label=row.names(age), cex=.7,main="Dotplot for Age",
+xlab="Age",color = "blue")
+
+
+#TWEAKING BAR PLOT
+tweak<-table(is_urban)
+tweak
+barplot(tweak,main="AREA",horiz=TRUE, cex.names=0.8,
+names.arg=c("Rural", "Urban"),col="#40f2f5")
+
+#MEAN BAR PLOT
+means <- aggregate(poverty_probability, by=list(country_id), FUN=mean)
+means <- means[order(means$x),]
+barplot(means$x, names.arg=means$Group.1,main ="Country vs Poverty")
+
+```
+
+
+
+<h3 color="blue">New Graphs</h3>
+
+```{r}
+
+library(lattice)
+#CLOUD GRAPH
+cloud(literacy~is_urban*age|can_use_internet, main="3D Cloud scatterplot by Internet")
+
+#SPLOM GRAPH
+splom(dataset[c(3,4,10,34)], main="Poverty Dataset")
+
+#VIOLIN PLOTs
+table(employment_category_last_year,education_level)
+x1 <- education_level[employment_category_last_year=="employed"]
+x2 <- education_level[employment_category_last_year=="unemployed"]
+x3<- education_level[employment_category_last_year=="housewife_or_student"]
+x4<- education_level[employment_category_last_year=="other"]
+vioplot(x1, x2,x3,x4,col="gold",names=c("Employed","Unemployed","Student","other"))
+title("Education level Vs Employment Category")
+
+```
+
+<h3>Conclusion</h3>
+
+From the data analysis done on the poverty dataset have identified the below listed:-
+
+1.There is a rapid raise in the poverty rate from 0.6 to 1.0,huge number of people are in poverty.<br>
+2.The age group from 20-60 is suffering more from poverty compared to age group from 70-80.<br>
+3.The dataset has 3075 number of people has illerate and 5119 number of people are literate.<br>
+4.Peple who are illerate are having high poverty compared to litrate.<br>
+5.People who are married are under high poverty rate compared to unmarried.<br>
+6.People living in rural areas face more poverty rate compared to urban.<br>
+areas,the dataset contains 5616 number of rural data and 2784 number of urban data.<br>
+7.Female who are illiterate are 1954 in numbers and 2493 are litrate.<br>
+8.The number of femaleâs who are employed are 2029 in number and unemployed are 2418 in number.<br>
+9.Many female are in educational level 1 followed by educational level 2.<br>
+10.The number of men who are illerate are 1121 and the number of men who are literate are 2491<br>
+11.Many Male are in educational level 2 followed by educational level 1<br>
+12.The number of male who are employed are 2762 in number and unemployed are 850 in number.Employment rate is more comapared to unemployment <br>
+13.Female who are Not working (2192) rate is more compared to self employment(909)<br>
+14.The female having no FORMAL SAVING rate is more compared to female who have FORMAL SAVING<br>
+15.The male having no FORMAL SAVING rate is more compared to male having FORMAL SAVING<br>
+16.The poverty rate is high for people who don't have formal savings and informal savings<br>
+17.People who have insurance are not under poverty and pepole who dont have insurance are under high risk of poverty rate<br>
+18.People who have investment also face poverty and pepole who dont have investment are under high risk of poverty rate<br>
+19.People who dont have bank account are having high poverty proabability compared to ones who have bank account<br>
+20.There is a rapid raise in the phone ownership from age 17 to 33 and from age 33 to 69 the phone ownership rate has been decreased<br>
+21.Male use internet more compared to female<br>
+22.People in urban area have more internet access comapared to urban area <br>
+23.Those who have more number of phone ownership the more the internet usuage<br>
+24.The people who are under unemployement and other have less educational level and people who have employed and student are having higher education level 25.The dataset contains huge amount of data of age group from 18-40

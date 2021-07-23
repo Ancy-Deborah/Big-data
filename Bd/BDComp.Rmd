@@ -1,0 +1,185 @@
+---
+title: "Air Pollution"
+author: "18PCSA116"
+date: "2/7/2020"
+output: html_document
+---
+
+```{r}
+
+#Attaching dataset
+dataset<-read.csv(file.choose(),header=TRUE)
+attach(dataset)
+dim(dataset)
+
+
+#Basic functions
+names(dataset)
+head(dataset)
+tail(dataset)
+dim(dataset)
+class(dataset)
+mode(dataset)
+length(dataset)
+str(dataset)
+summary(dataset)
+
+
+library(vcd)
+library(sqldf)
+
+
+
+dim<-c("location","state")
+mydata<-data.frame(location,state)
+
+
+counts<-table(location)
+barplot(counts)
+
+counts1<-table(stn_code)
+barplot(counts1,col="orange")
+
+counts2<-table(sampling_date)
+barplot(counts2,col="pink")
+
+counts3<-table(state)
+barplot(counts3)
+
+counts4<-table(agency)
+barplot(counts4)
+
+counts5<-table(type)
+barplot(counts5)
+
+counts6<-table(so2)
+barplot(counts6)
+
+counts7<-table(no2)
+barplot(counts7)
+
+counts8<-table(rspm)
+barplot(counts8)
+
+counts9<-table(spm)
+barplot(counts9)
+
+counts10<-table(location_monitoring_station)
+barplot(counts10)
+
+
+counts11<-table(pm2_5)
+barplot(counts11)
+
+counts12<-table(date)
+barplot(counts12)
+counts
+
+
+counts1
+counts2
+counts3
+counts4
+counts5
+counts6
+counts7
+counts8
+counts9
+counts10
+counts11
+counts12
+
+
+
+
+
+
+barplot(counts,main="Simple Bar Plot",xlab="Location",ylab="Frequency")
+barplot(counts1,main="Simple Bar Plot",xlab="stn_code",ylab="Frequency")
+barplot(counts2,main="Simple Bar Plot",xlab="sampling_date",ylab="Frequency")
+barplot(counts3,main="Simple Bar Plot",xlab="state",ylab="Frequency")
+barplot(counts4,main="Simple Bar Plot",xlab="agency",ylab="Frequency")
+barplot(counts3,main="Simple Bar Plot",xlab="state",ylab="Frequency")
+barplot(counts5,main="Simple Bar Plot",xlab="type",ylab="Frequency")
+barplot(counts6,main="Simple Bar Plot",xlab="so2",ylab="Frequency")
+barplot(counts7,main="Simple Bar Plot",xlab="no2",ylab="Frequency")
+barplot(counts8,main="Simple Bar Plot",xlab="rspm",ylab="Frequency")
+barplot(counts9,main="Simple Bar Plot",xlab="spm",ylab="Frequency")
+barplot(counts10,main="Simple Bar Plot",xlab="location_monitoring_station",ylab="Frequency")
+barplot(counts11,main="Simple Bar Plot",xlab="pm2_5",ylab="Frequency")
+barplot(counts12,main="Simple Bar Plot",xlab="date",ylab="Frequency")
+
+
+
+
+
+
+barplot(counts,main="Horizontal Bar Plot",xlab="Location",ylab="Frequency",horiz=TRUE)
+barplot(counts1,main="Horizontal Bar Plot",xlab="stn_code",ylab="Frequency",horiz=TRUE)
+barplot(counts2,main="Horizontal Bar Plot",xlab="sampling_date",ylab="Frequency",horiz=TRUE)
+barplot(counts3,main="Horizontal Bar Plot",xlab="state",ylab="Frequency",horiz=TRUE)
+barplot(counts4,main="Horizontal Bar Plot",xlab="agency",ylab="Frequency",horiz=TRUE)
+barplot(counts3,main="Horizontal Bar Plot",xlab="state",ylab="Frequency",horiz=TRUE)
+barplot(counts5,main="Horizontal Bar Plot",xlab="type",ylab="Frequency",horiz=TRUE)
+barplot(counts6,main="Horizontal Bar Plot",xlab="so2",ylab="Frequency",horiz=TRUE)
+barplot(counts7,main="Horizontal Bar Plot",xlab="no2",ylab="Frequency",horiz=TRUE)
+barplot(counts8,main="Horizontal Bar Plot",xlab="rspm",ylab="Frequency",horiz=TRUE)
+barplot(counts9,main="Horizontal Bar Plot",xlab="spm",ylab="Frequency",horiz=TRUE)
+barplot(counts10,main="Horizontal Bar Plot",xlab="location_monitoring_station",ylab="Frequency",horiz=TRUE)
+barplot(counts11,main="Horizontal Bar Plot",xlab="pm2_5",ylab="Frequency",horiz=TRUE)
+barplot(counts12,main="Horizontal Bar Plot",xlab="date",ylab="Frequency",horiz=TRUE)
+
+
+
+
+
+barplot(counts,
+main="Stacked Bar Plot",xlab="Location", ylab="Frequency",col=c("red", "yellow","green"))
+
+barplot(counts1,
+main="Stacked Bar Plot",
+xlab="stn_code", ylab="Frequency",
+col=c("red", "yellow","green"))
+
+barplot(counts2,
+main="Stacked Bar Plot",
+xlab="sampling_date", ylab="Frequency",
+col=c("red", "yellow","green"))
+
+barplot(counts3,
+main="Stacked Bar Plot",
+xlab="state", ylab="Frequency",
+col=c("red", "yellow","green"))
+
+barplot(counts4,
+main="Stacked Bar Plot",
+xlab="agency", ylab="Frequency",
+col=c("red", "yellow","green"))
+
+
+
+
+
+##attach(dataset)
+hist(so2,col="blue")
+table(location,state)
+plot(so2,date)
+table(state)
+plot(table(state,so2),col="red")
+plot(table(type,so2),col="#009999")
+abline(lm(so2~type),col="#FF0000")
+
+```
+
+Identified
+1.Air pollution is high in haldia and khana place compared to other places<br>
+2.The year 2014 and 2008 has more air pollution<br>
+3.Manipur state has more air pollution<br>
+4.MAPB and VRCE helps to reduce the air pollution<br>
+5.Industrial area pollute more<br>
+6.The pm25 is more in 30-36 frequency rate<br>
+7.no2 is high in frequency level 11<br>
+8.spm is highest rate is 600<br>
+9.pm25 is at its peek on 36 frequency level<br>
+10.so2 level is more the air pollution increases<br>
+
